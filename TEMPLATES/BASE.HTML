@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Review Forge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='STYLES.CSS') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='MANIFEST.JSON') }}">
+  <script defer src="{{ url_for('static', filename='MAIN.JS') }}"></script>
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="container header-inner" id="header-inner">
+      <a class="brand" href="{{ url_for('index') }}" data-pjax>REVIEW FORGE</a>
+      <nav class="nav-actions" role="navigation" aria-label="Main" id="nav-actions">
+        {% if user %}
+          <span class="welcome">Hi, <strong>{{ user.username }}</strong></span>
+          <a class="btn ghost" href="{{ url_for('logout') }}" data-pjax>Logout</a>
+        {% else %}
+          <a class="btn" href="{{ url_for('login') }}" data-pjax>Login</a>
+          <a class="btn ghost" href="{{ url_for('register') }}" data-pjax>Register</a>
+        {% endif %}
+        <button id="fullscreenBtn" class="btn ghost fullscreen-toggle" type="button" aria-pressed="false">Fullscreen</button>
+      </nav>
+    </div>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-overlay" aria-live="polite">
+        <div class="flash-wrap">
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main class="main" role="main">
+    <div class="container main-content" id="pjax-container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">© Review Forge</div>
+  </footer>
+</body>
+</html>

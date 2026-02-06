@@ -1,0 +1,21 @@
+{% extends "BASE.HTML" %}
+{% block content %}
+<section class="hero hero-centered" aria-labelledby="hero-title">
+  <div class="hero-inner" id="hero-inner">
+    <h1 id="hero-title">Discover and review your favourite games</h1>
+
+    {% if not user %}
+      <p class="lead">{{ '' if hide_hero_lead else 'Sign up to leave reviews and rate games.' }}</p>
+    {% endif %}
+
+    <div class="cta" role="group" aria-label="Primary actions">
+      {% if not user %}
+        <a class="btn large" href="{{ url_for('register') }}" data-pjax>Create an account</a>
+        <a class="btn ghost large" href="{{ url_for('login') }}" data-pjax>Sign in</a>
+      {% else %}
+        <button class="btn large" type="button" disabled aria-disabled="true">Browse games</button>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
