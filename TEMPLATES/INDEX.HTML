@@ -13,7 +13,9 @@
         <a class="btn large" href="{{ url_for('register') }}" data-pjax>Create an account</a>
         <a class="btn ghost large" href="{{ url_for('login') }}" data-pjax>Sign in</a>
       {% else %}
-        <button class="btn large" type="button" disabled aria-disabled="true">Browse games</button>
+        <a class="btn large" href="{{ url_for('games') }}" data-pjax>
+          Browse games
+        </a>
       {% endif %}
     </div>
   </div>

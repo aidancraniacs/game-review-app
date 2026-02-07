@@ -230,3 +230,128 @@ input[type="text"], input[type="email"], input[type="password"] {
 .fs-restore-inner span { color: var(--muted); font-weight:600; font-size:0.95rem; }
 .fs-restore-inner .btn { padding:6px 10px; font-size:0.9rem; }
 .fs-restore-inner .btn.ghost { border-color: rgba(255,255,255,0.06); color:var(--text); }
+
+.catalogue-page {
+  width: 100%;
+}
+
+.catalogue-section {
+  margin-bottom: 48px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.game-row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.game-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.55);
+}
+
+.game-card.horizontal {
+  min-width: 260px;
+  max-width: 260px;
+}
+
+.game-card.vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.game-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.game-info p {
+  font-size: 0.9rem;
+}
+
+.rating {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.btn.small {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+.cover {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.cover.large {
+  aspect-ratio: 2 / 3;
+}
+
+.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.game-card.horizontal .cover {
+  aspect-ratio: 2 / 3;
+}
+
+.game-card.horizontal {
+  min-width: 180px;
+  max-width: 180px;
+}
+
+.game-info {
+  padding-top: 6px;
+}
+
+.game-row::-webkit-scrollbar {
+  height: 6px;
+}
+.game-row::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+}
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+  background: var(--glass);
+  color: var(--text);
+  resize: vertical;
+  font-size: 0.95rem;
+}
+
+.btn:hover { filter: brightness(1.05); }
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.rating { font-weight: 700; color: var(--accent); }

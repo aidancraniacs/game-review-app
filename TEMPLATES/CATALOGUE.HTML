@@ -1,0 +1,96 @@
+{% extends "BASE.HTML" %}
+{% block content %}
+
+<section class="catalogue-page">
+
+  <section class="catalogue-section">
+    <h2>🔥Popular Games</h2>
+
+    <div class="game-row">
+      {% for game in popular_games %}
+        <article class="game-card horizontal">
+          <div class="cover">
+            <img
+              src="{{ game.cover_url or url_for('static', filename='cover-placeholder.png') }}"
+              alt="{{ game.title }} cover"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="game-info">
+            <h3>{{ game.title }}</h3>
+            <p class="rating">
+              {{ game.avg_rating or '—' }}/5
+              <span class="muted">({{ game.review_count }})</span>
+            </p>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="catalogue-section">
+    <h2>💎Notable Games</h2>
+
+    <div class="game-row">
+      {% for game in new_games %}
+        <article class="game-card horizontal">
+          <div class="cover">
+            <img
+              src="{{ game.cover_url or url_for('static', filename='cover-placeholder.png') }}"
+              alt="{{ game.title }} cover"
+              loading="lazy"
+            >
+          </div>
+
+          <div class="game-info">
+            <h3>{{ game.title }}</h3>
+            <p class="rating">{{ game.avg_rating or '—' }}/5</p>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="catalogue-section">
+    <h2>🎮All Games</h2>
+
+    <div class="game-grid">
+      {% for game in games %}
+        <article class="game-card vertical">
+          <div class="cover large">
+            <img
+              src="{{ game.cover_url or url_for('static', filename='cover-placeholder.png') }}"
+              alt="{{ game.title }} cover"
+              loading="lazy"
+            >
+          </div>
+
+          <h3>{{ game.title }}</h3>
+
+          <p class="rating">
+            {{ game.avg_rating or '—' }}/5
+            <span class="muted">({{ game.review_count }})</span>
+          </p>
+
+          <form method="post" action="{{ url_for('games') }}" data-pjax>
+            <input type="hidden" name="game_id" value="{{ game.id }}">
+
+            <label>Rating
+              <input type="number" name="rating" min="1" max="5" required>
+            </label>
+
+            <label>Review
+              <textarea name="content" rows="2"></textarea>
+            </label>
+
+            <button class="btn small" type="submit">Review</button>
+          </form>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+</section>
+
+{% endblock %}
