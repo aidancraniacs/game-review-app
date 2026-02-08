@@ -1,3 +1,5 @@
 -- Alot of the code and information comes from different yt videos based off the issues or features I wanted to implement/fix.
 -- I wanted to make the web app as high quality as I could, but I don't know much further than the standard components from the pwa tutorials.
 -- There's probably a bunch of bugs that I just have no idea how to fix
+-- Must run python APP.PY in terminal for to start
+-- This should work on mobile and desktop, I tried on both and it was a success

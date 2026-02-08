@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+
   const isSameOrigin = (url) => {
     try {
       const u = new URL(url, location.href);
@@ -11,53 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const findMainContainer = () => document.getElementById('pjax-container');
   const findHeaderInner = () => document.getElementById('header-inner');
 
-  let fsBtn = null;
-  function isFullscreen() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-  }
-  async function enterFullscreen() {
-    const el = document.documentElement;
-    try {
-      if (el.requestFullscreen) await el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
-      else if (el.mozRequestFullScreen) await el.mozRequestFullScreen();
-      else if (el.msRequestFullscreen) await el.msRequestFullscreen();
-    } catch (err) { console.warn('enterFullscreen error', err); }
-  }
-  async function exitFullscreen() {
-    try {
-      if (document.exitFullscreen) await document.exitFullscreen();
-      else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
-      else if (document.mozCancelFullScreen) await document.mozCancelFullScreen();
-      else if (document.msExitFullscreen) await document.msExitFullscreen();
-    } catch (err) { console.warn('exitFullscreen error', err); }
-  }
-
-  function rebindFullscreenButton() {
-    const newFs = document.getElementById('fullscreenBtn');
-    if (!newFs) { fsBtn = null; return; }
-    const fresh = newFs.cloneNode(true);
-    newFs.parentNode.replaceChild(fresh, newFs);
-    fsBtn = fresh;
-    fsBtn.textContent = isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen';
-    fsBtn.setAttribute('aria-pressed', String(isFullscreen()));
-    fsBtn.addEventListener('click', async () => {
-      if (isFullscreen()) await exitFullscreen();
-      else await enterFullscreen();
-      fsBtn.textContent = isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen';
-      fsBtn.setAttribute('aria-pressed', String(isFullscreen()));
-    });
-    document.addEventListener('fullscreenchange', () => {
-      if (!fsBtn) return;
-      fsBtn.textContent = isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen';
-      fsBtn.setAttribute('aria-pressed', String(isFullscreen()));
-    });
-  }
-
   function clearPasswordInputsSafely() {
     try {
       const pwInputs = Array.from(document.querySelectorAll('input[type="password"]'));
       pwInputs.forEach((inp) => {
+
         inp.value = '';
         inp.setAttribute('autocomplete', 'off');
         inp.blur();
@@ -68,37 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('clearPasswordInputsSafely error', e);
     }
   }
-
-  function createFullscreenToast() {
-    if (document.getElementById('fs-restore-toast')) return;
-    const toast = document.createElement('div');
-    toast.id = 'fs-restore-toast';
-    toast.className = 'fs-restore-toast';
-    toast.innerHTML = `
-      <div class="fs-restore-inner">
-        <span>Left fullscreen</span>
-        <button id="fs-restore-btn" class="btn ghost">Return to fullscreen</button>
-        <button id="fs-restore-dismiss" class="btn ghost">Dismiss</button>
-      </div>
-    `;
-    document.body.appendChild(toast);
-    const btn = document.getElementById('fs-restore-btn');
-    const dismiss = document.getElementById('fs-restore-dismiss');
-    btn.addEventListener('click', async () => {
-      await enterFullscreen();
-      removeFullscreenToast();
-    });
-    dismiss.addEventListener('click', removeFullscreenToast);
-    requestAnimationFrame(() => toast.classList.add('fs-restore-show'));
-    setTimeout(() => removeFullscreenToast(), 10000);
-  }
-  function removeFullscreenToast() {
-    const t = document.getElementById('fs-restore-toast');
-    if (!t) return;
-    t.classList.add('fs-restore-hide');
-    setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 260);
-  }
-  function showFullscreenToast() { createFullscreenToast(); }
 
   function replaceFlashOverlayFromDoc(doc) {
     const newFlash = doc.querySelector('.flash-overlay');
@@ -153,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try { history.pushState({ pjax: true }, '', finalUrl || location.href); } catch (e) {}
 
     bindForms();
-    rebindFullscreenButton();
+    bindStarRatings();
     autoHideFlash();
 
     clearPasswordInputsSafely();
@@ -162,16 +90,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mainHeading) mainHeading.focus?.();
   }
 
-  async function submitFormAjax(url, formData, wasFullscreenBefore) {
+  async function submitFormAjax(url, formData) {
     try {
       document.body.style.cursor = 'wait';
       const res = await fetch(url, {
         method: 'POST',
         body: formData,
         credentials: 'same-origin',
-        headers: { 'X-PJAX': 'true' },
-        redirect: 'follow'
+        headers: { 'X-PJAX': 'true' }
       });
+
+      const contentType = res.headers.get('content-type') || '';
+
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+      }
 
       if (!res.ok) {
         const text = await res.text().catch(() => null);
@@ -194,11 +131,59 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+function bindStarRatings() {
+  document.querySelectorAll('.star-rating').forEach((wrap) => {
+    const stars = wrap.querySelectorAll('button');
+    const input = wrap.querySelector('input[name="rating"]');
+    const text = wrap.querySelector('.rating-text');
+    const display = wrap
+      .closest('form')
+      .querySelector('.rating-value');
+
+    if (!input || stars.length === 0) return;
+
+    stars.forEach((star, index) => {
+      star.addEventListener('click', () => {
+        const value = index + 1;
+        input.value = value;
+
+        if (display) display.textContent = value;
+        if (text) text.textContent = `${value} / 5`;
+
+        stars.forEach((s, i) => {
+          s.classList.toggle('active', i < value);
+        });
+      });
+
+      star.addEventListener('mouseenter', () => {
+        stars.forEach((s, i) => {
+          s.classList.toggle('active', i <= index);
+        });
+      });
+
+      star.addEventListener('mouseleave', () => {
+        const value = parseInt(input.value || 0);
+        stars.forEach((s, i) => {
+          s.classList.toggle('active', i < value);
+        });
+      });
+
+      star.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          star.click();
+        }
+      });
+    });
+  });
+}
+
   function bindForms() {
     const reg = document.getElementById('registerForm');
     if (reg && !reg.dataset.bound) {
       reg.dataset.bound = 'true';
       reg.addEventListener('submit', async (e) => {
+        if (reg.hasAttribute('data-no-pjax')) return;
         e.preventDefault();
         const btn = reg.querySelector('button[type="submit"]');
         if (btn) btn.disabled = true;
@@ -209,8 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (btn) btn.disabled = false;
           return;
         }
-        const wasFs = isFullscreen();
-        await submitFormAjax(reg.action || window.location.href, formData, wasFs);
+        await submitFormAjax(reg.action || window.location.href, formData);
         if (btn) btn.disabled = false;
       });
     }
@@ -219,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (login && !login.dataset.bound) {
       login.dataset.bound = 'true';
       login.addEventListener('submit', async (e) => {
+        if (login.hasAttribute('data-no-pjax')) return;
         e.preventDefault();
         const btn = login.querySelector('button[type="submit"]');
         if (btn) btn.disabled = true;
@@ -230,11 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (btn) btn.disabled = false;
           return;
         }
-        const wasFs = isFullscreen();
-        await submitFormAjax(login.action || window.location.href, formData, wasFs);
+        await submitFormAjax(login.action || window.location.href, formData);
         if (btn) btn.disabled = false;
       });
     }
+
   }
 
   async function handlePjaxClick(e, a) {
@@ -253,7 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) { location.href = url; return; }
       const text = await res.text();
       replaceFromHtml(text, res.url || url);
-      if (wasFs && !isFullscreen()) showFullscreenToast();
     } catch (err) {
       console.warn('PJAX load failed, falling back to full navigation', err);
       location.href = href;
@@ -262,12 +246,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a');
-    if (!a) return;
-    const href = a.getAttribute('href') || '';
-    const shouldPjax = a.hasAttribute('data-pjax') || (isSameOrigin(href) && !a.hasAttribute('data-no-pjax') && !href.startsWith('mailto:') && !href.startsWith('tel:'));
-    if (shouldPjax) handlePjaxClick(e, a);
+  document.addEventListener("click", (e) => {
+    const star = e.target.closest(".star-rating button");
+    if (!star) return;
+
+    const starRating = star.closest(".star-rating");
+    const buttons = [...starRating.querySelectorAll("button")];
+    const input = starRating.querySelector('input[name="rating"]');
+    const value = buttons.indexOf(star) + 1;
+
+    input.value = value;
+
+    buttons.forEach((btn, i) => {
+      btn.classList.toggle("active", i < value);
+    });
+
+    const text = starRating.querySelector(".rating-text");
+    if (text) text.textContent = `${value} / 5`;
+  });
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".star-rating button");
+    if (!btn) return;
+
+    const starWrap = btn.closest(".star-rating");
+    const buttons = [...starWrap.querySelectorAll("button")];
+    const hiddenInput = starWrap.querySelector('input[name="rating"]');
+    const ratingText = starWrap.querySelector(".rating-text");
+    const ratingValueEl = starWrap.closest("form").querySelector(".rating-value");
+
+    const rating = buttons.indexOf(btn) + 1;
+
+    hiddenInput.value = rating;
+
+    buttons.forEach((b, i) => {
+      b.classList.toggle("active", i < rating);
+    });
+
+    ratingText.textContent = `${rating} / 5`;
+    ratingValueEl.textContent = rating;
   });
 
   window.addEventListener('popstate', async () => {
@@ -284,6 +301,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   bindForms();
-  rebindFullscreenButton();
   autoHideFlash();
 });

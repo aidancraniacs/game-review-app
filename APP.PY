@@ -1,98 +1,110 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import sqlite3
+from flask_login import login_user, LoginManager, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+from sqlalchemy.sql import func
 
 app = Flask(__name__, template_folder='TEMPLATES', static_folder='STATIC')
-app.secret_key = os.urandom(24)
-DB_PATH = 'DATABASE.DB'
+app.config['SECRET_KEY'] = 'dev-key-change-later'
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'DATABASE.DB')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 
+db = SQLAlchemy(app)
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(30), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
 
-def init_db():
-    conn = get_db_connection()
+class Game(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    release_year = db.Column(db.Integer)
+    cover_url = db.Column(db.String(255))
 
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+    reviews = db.relationship('Review', backref='game', lazy=True)
 
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS games (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            description TEXT,
-            release_year INTEGER,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    content = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS reviews (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            game_id INTEGER NOT NULL,
-            rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
-            content TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(user_id, game_id)
-        )
-    ''')
+    user = db.relationship('User', backref='reviews')
 
-    conn.commit()
-    conn.close()
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'game_id', name='unique_user_game_review'),
+    )
+
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 def is_pjax_request():
     return request.headers.get('X-PJAX') == 'true'
 
+
 @app.route('/')
 def index():
-    user = session.get('user')
+    user = current_user if current_user.is_authenticated else None
     hide_hero_lead = session.pop('hide_hero_lead', False)
     return render_template('INDEX.HTML', user=user, hide_hero_lead=hide_hero_lead)
 
-
-@app.route('/games')
+@app.route('/games', methods=['GET', 'POST'])
+@login_required
 def games():
-    user = session.get('user')
+    user = current_user
 
-    if not user:
-        flash('Please sign in to browse games.', 'info')
-        if is_pjax_request():
-            return render_template('LOGIN.HTML', user=None)
-        return redirect(url_for('login'))
+    if request.method == 'POST':
+        game_id = request.form.get('game_id', type=int)
+        rating = request.form.get('rating', type=int)
+        content = (request.form.get('content') or '').strip()
 
-    games = [
-        {"id": 1, "title": "Minecraft", "description": "A sandbox game about placing blocks and going on adventures.", "cover_url": url_for("static", filename="covers/minecraft.jpg")},
-        {"id": 2, "title": "Geometry Dash", "description": "A fast-paced rhythm platformer with challenging levels.", "cover_url": url_for("static", filename="covers/geometry-dash.jpg")},
-        {"id": 3, "title": "Elden Ring", "description": "An open-world action RPG from FromSoftware.", "cover_url": url_for("static", filename="covers/elden-ring.jpg")},
-        {"id": 4, "title": "Stardew Valley", "description": "A relaxing farming and life simulation game.", "cover_url": url_for("static", filename="covers/stardew-valley.jpg")},
-        {"id": 5, "title": "Hollow Knight", "description": "A beautifully animated metroidvania set in Hallownest.", "cover_url": url_for("static", filename="covers/hollow-knight.jpg")},
-        {"id": 6, "title": "Celeste", "description": "A challenging platformer about climbing a mountain.", "cover_url": url_for("static", filename="covers/celeste.jpg")},
-        {"id": 7, "title": "Terraria", "description": "A 2D sandbox adventure with crafting and exploration.", "cover_url": url_for("static", filename="covers/terraria.jpg")},
-        {"id": 8, "title": "Dead Cells", "description": "A fast-paced roguelike action platformer.", "cover_url": url_for("static", filename="covers/dead-cells.jpg")},
-        {"id": 9, "title": "Undertale", "description": "A story-driven RPG where your choices matter.", "cover_url": url_for("static", filename="covers/undertale.jpg")},
-        {"id": 10, "title": "Hades", "description": "A roguelike dungeon crawler based on Greek mythology.", "cover_url": url_for("static", filename="covers/hades.jpg")},
-        {"id": 11, "title": "Cuphead", "description": "A run-and-gun game with hand-drawn animation.", "cover_url": url_for("static", filename="covers/cuphead.jpg")},
-        {"id": 12, "title": "Portal 2", "description": "A puzzle game involving portals and physics.", "cover_url": url_for("static", filename="covers/portal-2.jpg")},
-        {"id": 13, "title": "DOOM Eternal", "description": "A fast-paced first-person shooter.", "cover_url": url_for("static", filename="covers/doom-eternal.jpg")},
-        {"id": 14, "title": "The Witcher 3", "description": "A massive open-world RPG with deep storytelling.", "cover_url": url_for("static", filename="covers/the-witcher-3.jpg")},
-        {"id": 15, "title": "Skyrim", "description": "An open-world fantasy RPG.", "cover_url": url_for("static", filename="covers/skyrim.jpg")},
-        {"id": 16, "title": "Red Dead Redemption 2", "description": "A cinematic open-world western adventure.", "cover_url": url_for("static", filename="covers/red-dead-redemption-2.jpg")},
-        {"id": 17, "title": "Dark Souls III", "description": "A challenging action RPG.", "cover_url": url_for("static", filename="covers/dark-souls-3.jpg")},
-        {"id": 18, "title": "Sekiro", "description": "A brutal action game focused on precision combat.", "cover_url": url_for("static", filename="covers/sekiro.jpg")},
-        {"id": 19, "title": "Slay the Spire", "description": "A roguelike deck-building game.", "cover_url": url_for("static", filename="covers/slay-the-spire.jpg")},
-        {"id": 20, "title": "Factorio", "description": "A game about building and optimising factories.", "cover_url": url_for("static", filename="covers/factorio.jpg")}
-    ]
+        if not game_id or not rating or rating < 1 or rating > 5:
+            flash('Please select a valid rating.', 'error')
+            return redirect(url_for('games'))
+
+        existing = Review.query.filter_by(
+            user_id=user.id,
+            game_id=game_id
+        ).first()
+
+        if existing:
+            existing.rating = rating
+            existing.content = content
+            flash('Your review was updated.', 'success')
+        else:
+            review = Review(
+                user_id=user.id,
+                game_id=game_id,
+                rating=rating,
+                content=content
+            )
+            db.session.add(review)
+            flash('Review submitted. Thanks!', 'success')
+
+        db.session.commit()
+        return redirect(url_for('games'))
+
+    games = Game.query.all()
+
+    for game in games:
+        reviews = Review.query.filter_by(game_id=game.id).all()
+        game.review_count = len(reviews)
+        game.avg_rating = (
+            round(sum(r.rating for r in reviews) / len(reviews), 1)
+            if reviews else None
+        )
 
     return render_template(
         "CATALOGUE.HTML",
@@ -102,65 +114,153 @@ def games():
         new_games=games[6:12]
     )
 
+@app.route('/reviews/<int:review_id>/delete', methods=['POST'])
+@login_required
+def delete_review(review_id):
+    review = Review.query.get_or_404(review_id)
+
+    if review.user_id != current_user.id:
+        flash("You can't delete someone else's review.", "error")
+        return redirect(url_for('games'))
+
+    db.session.delete(review)
+    db.session.commit()
+
+    flash("Your review was deleted.", "success")
+    return redirect(url_for('games'))
+
+@app.route("/games/<int:game_id>")
+def game_detail(game_id):
+    user = current_user if current_user.is_authenticated else None
+
+    game = Game.query.get_or_404(game_id)
+
+    reviews = (
+        Review.query
+        .filter_by(game_id=game.id)
+        .order_by(Review.created_at.desc())
+        .all()
+    )
+
+    avg_rating = (
+        db.session.query(db.func.avg(Review.rating))
+        .filter(Review.game_id == game.id)
+        .scalar()
+    )
+
+    avg_rating = round(avg_rating, 1) if avg_rating else None
+
+    return render_template(
+        "GAME_DETAIL.HTML",
+        user=user,
+        game=game,
+        reviews=reviews,
+        avg_rating=avg_rating,
+        review_count=len(reviews)
+    )
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        try:
-            username = (request.form.get('username') or '').strip()
-            email = (request.form.get('email') or '').strip().lower()
-            password = request.form.get('password') or ''
+        username = (request.form.get('username') or '').strip()
+        email = (request.form.get('email') or '').strip().lower()
+        password = request.form.get('password') or ''
 
-            password_hash = generate_password_hash(password)
+        if not username or not email or not password:
+            flash('All fields are required.', 'error')
+            return render_template('REGISTER.HTML')
 
-            conn = get_db_connection()
-            conn.execute(
-                'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-                (username, email, password_hash)
-            )
-            conn.commit()
-            conn.close()
+        password_hash = generate_password_hash(password)
 
-            session['user'] = {'username': username}
-            flash('Account created. You are now signed in.', 'success')
-            return redirect(url_for('index'))
-
-        except sqlite3.IntegrityError:
+        if User.query.filter((User.username == username) | (User.email == email)).first():
             flash('Username or email already exists.', 'error')
+            return render_template('REGISTER.HTML')
+
+        user = User(
+            username=username,
+            email=email,
+            password_hash=password_hash
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+        login_user(user)
+        flash('Account created. You are now signed in.', 'success')
+        return redirect(url_for('index'))
 
     return render_template('REGISTER.HTML')
 
-
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'POST':
-        identifier = (request.form.get('identifier') or '').strip().lower()
-        password = request.form.get('password') or ''
+    if request.method == "POST":
+        identifier = request.form.get("identifier")
+        password = request.form.get("password")
 
-        conn = get_db_connection()
-        user = conn.execute(
-            'SELECT * FROM users WHERE lower(username)=? OR email=?',
-            (identifier, identifier)
-        ).fetchone()
-        conn.close()
+        user = User.query.filter(
+            (User.username == identifier) | (User.email == identifier)
+        ).first()
 
-        if user and check_password_hash(user['password_hash'], password):
-            session['user'] = {'id': user['id'], 'username': user['username']}
-            flash(f"Welcome back, {user['username']}!", 'success')
-            return redirect(url_for('index'))
+        if not user or not check_password_hash(user.password_hash, password):
+            flash("Invalid username/email or password", "error")
+            return render_template("LOGIN.HTML")
 
-        flash('Invalid credentials.', 'error')
+        login_user(user)
+        flash("Welcome back!", "success")
+        return redirect(url_for("index"))
 
-    return render_template('LOGIN.HTML')
+    return render_template("LOGIN.HTML")
 
+from flask_login import logout_user
 
 @app.route('/logout')
 def logout():
-    session.pop('user', None)
+    logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-init_db()
+def seed_games():
+    if Game.query.first():
+        return
+
+    games = [
+        ("Minecraft", "A sandbox game about placing blocks and adventures.", None, "covers/minecraft.jpg"),
+        ("Subnautica", "An underwater survival adventure on an alien ocean planet.", 2018, "covers/subnautica.jpg"),
+        ("Geometry Dash", "A fast-paced rhythm platformer.", None, "covers/geometry-dash.jpg"),
+        ("Elden Ring", "An open-world action RPG.", 2022, "covers/elden-ring.jpg"),
+        ("Stardew Valley", "A relaxing farming and life simulation game.", None, "covers/stardew-valley.jpg"),
+        ("Hollow Knight", "A beautifully animated metroidvania.", None, "covers/hollow-knight.jpg"),
+        ("Celeste", "A challenging platformer.", None, "covers/celeste.jpg"),
+        ("Terraria", "A 2D sandbox adventure.", None, "covers/terraria.jpg"),
+        ("Dead Cells", "A fast-paced roguelike action platformer.", None, "covers/dead-cells.jpg"),
+        ("Undertale", "A story-driven RPG.", None, "covers/undertale.jpg"),
+        ("Hades", "A roguelike dungeon crawler.", None, "covers/hades.jpg"),
+        ("Cuphead", "A run-and-gun game with hand-drawn animation.", None, "covers/cuphead.jpg"),
+        ("Portal 2", "A puzzle game involving portals.", None, "covers/portal-2.jpg"),
+        ("DOOM Eternal", "A fast-paced FPS.", None, "covers/doom-eternal.jpg"),
+        ("The Witcher 3", "A massive open-world RPG.", None, "covers/the-witcher-3.jpg"),
+        ("Skyrim", "An open-world fantasy RPG.", None, "covers/skyrim.jpg"),
+        ("Red Dead Redemption 2", "A cinematic western adventure.", None, "covers/red-dead-redemption-2.jpg"),
+        ("Dark Souls III", "A challenging action RPG.", None, "covers/dark-souls-3.jpg"),
+        ("Sekiro", "A brutal precision-based action game.", None, "covers/sekiro.jpg"),
+        ("Slay the Spire", "A roguelike deck builder.", None, "covers/slay-the-spire.jpg"),
+        ("Factorio", "A game about building factories.", None, "covers/factorio.jpg"),
+    ]
+
+    for title, desc, year, cover in games:
+        db.session.add(Game(
+            title=title,
+            description=desc,
+            release_year=year,
+            cover_url=cover
+        ))
+
+    db.session.commit()
+
+
+with app.app_context():
+    db.create_all()
+    seed_games()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

@@ -4,63 +4,80 @@
 <section class="catalogue-page">
 
   <section class="catalogue-section">
-    <h2>🔥Popular Games</h2>
+    <h2>🔥 Popular Games</h2>
 
     <div class="game-row">
       {% for game in popular_games %}
-        <article class="game-card horizontal">
-          <div class="cover">
-            <img
-              src="{{ game.cover_url or url_for('static', filename='cover-placeholder.png') }}"
-              alt="{{ game.title }} cover"
-              loading="lazy"
-            >
-          </div>
+        <a
+          href="{{ url_for('game_detail', game_id=game.id) }}"
+          class="game-link"
+          data-pjax
+        >
+          <article class="game-card horizontal">
+            <div class="cover">
+              <img
+                src="{{ url_for('static', filename=game.cover_url) if game.cover_url else url_for('static', filename='cover-placeholder.png') }}"
+                alt="{{ game.title }} cover"
+                loading="lazy"
+              >
+            </div>
 
-          <div class="game-info">
-            <h3>{{ game.title }}</h3>
-            <p class="rating">
-              {{ game.avg_rating or '—' }}/5
-              <span class="muted">({{ game.review_count }})</span>
-            </p>
-          </div>
-        </article>
+            <div class="game-info">
+              <h3>{{ game.title }}</h3>
+              <p class="rating">
+                {{ game.avg_rating or '—' }}/5
+                <span class="muted">({{ game.review_count }})</span>
+              </p>
+            </div>
+          </article>
+        </a>
       {% endfor %}
     </div>
   </section>
 
   <section class="catalogue-section">
-    <h2>💎Notable Games</h2>
+    <h2>✨ Notable Games</h2>
 
     <div class="game-row">
       {% for game in new_games %}
-        <article class="game-card horizontal">
-          <div class="cover">
-            <img
-              src="{{ game.cover_url or url_for('static', filename='cover-placeholder.png') }}"
-              alt="{{ game.title }} cover"
-              loading="lazy"
-            >
-          </div>
+        <a
+          href="{{ url_for('game_detail', game_id=game.id) }}"
+          class="game-link"
+          data-pjax
+        >
+          <article class="game-card horizontal">
+            <div class="cover">
+              <img
+                src="{{ url_for('static', filename=game.cover_url) if game.cover_url else url_for('static', filename='cover-placeholder.png') }}"
+                alt="{{ game.title }} cover"
+                loading="lazy"
+              >
+            </div>
 
-          <div class="game-info">
-            <h3>{{ game.title }}</h3>
-            <p class="rating">{{ game.avg_rating or '—' }}/5</p>
-          </div>
-        </article>
+            <div class="game-info">
+              <h3>{{ game.title }}</h3>
+              <p class="rating">
+                {{ game.avg_rating or '—' }}/5
+              </p>
+            </div>
+          </article>
+        </a>
       {% endfor %}
     </div>
   </section>
 
   <section class="catalogue-section">
-    <h2>🎮All Games</h2>
+    <h2>🎮 All Games</h2>
 
     <div class="game-grid">
       {% for game in games %}
+        {% set my_review = game.reviews | selectattr("user_id", "equalto", user.id) | first %}
+
         <article class="game-card vertical">
+
           <div class="cover large">
             <img
-              src="{{ game.cover_url or url_for('static', filename='cover-placeholder.png') }}"
+              src="{{ url_for('static', filename=game.cover_url) if game.cover_url else url_for('static', filename='cover-placeholder.png') }}"
               alt="{{ game.title }} cover"
               loading="lazy"
             >
@@ -69,23 +86,61 @@
           <h3>{{ game.title }}</h3>
 
           <p class="rating">
-            {{ game.avg_rating or '—' }}/5
-            <span class="muted">({{ game.review_count }})</span>
+            {% if game.review_count %}
+              ★ {{ game.avg_rating }}
+              <span class="muted">· {{ game.review_count }} reviews</span>
+            {% else %}
+              <span class="muted">No ratings yet</span>
+            {% endif %}
           </p>
+
+          <a
+            href="{{ url_for('game_detail', game_id=game.id) }}"
+            class="muted small-link"
+            data-pjax
+          >
+            View details →
+          </a>
 
           <form method="post" action="{{ url_for('games') }}" data-pjax>
             <input type="hidden" name="game_id" value="{{ game.id }}">
 
-            <label>Rating
-              <input type="number" name="rating" min="1" max="5" required>
-            </label>
+            <h4 class="rating-header">
+              Your rating: <span class="rating-value">—</span>
+            </h4>
 
-            <label>Review
+            <div class="star-rating" aria-label="Star rating">
+              <input type="hidden" name="rating" required />
+
+              <button type="button">★</button>
+              <button type="button">★</button>
+              <button type="button">★</button>
+              <button type="button">★</button>
+              <button type="button">★</button>
+
+              <span class="rating-text">Select a rating</span>
+            </div>
+
+            <label>
+              Review
               <textarea name="content" rows="2"></textarea>
             </label>
 
-            <button class="btn small" type="submit">Review</button>
+            <button class="btn small" type="submit">Submit</button>
           </form>
+
+          {% if my_review %}
+            <form
+              method="post"
+              action="{{ url_for('delete_review', review_id=my_review.id) }}"
+              style="margin-top:8px"
+            >
+              <button class="btn ghost small" type="submit">
+                Delete review
+              </button>
+            </form>
+          {% endif %}
+
         </article>
       {% endfor %}
     </div>

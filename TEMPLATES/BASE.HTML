@@ -3,10 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Review Forge</title>
+  <title>{% block title %}Review Forge{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='STYLES.CSS') }}">
   <link rel="manifest" href="{{ url_for('static', filename='MANIFEST.JSON') }}">
-  <meta name="theme-color" content="#60a5fa">
   <script defer src="{{ url_for('static', filename='MAIN.JS') }}"></script>
 </head>
 <body>
@@ -21,7 +20,6 @@
           <a class="btn" href="{{ url_for('login') }}" data-pjax>Login</a>
           <a class="btn ghost" href="{{ url_for('register') }}" data-pjax>Register</a>
         {% endif %}
-        <button id="fullscreenBtn" class="btn ghost fullscreen-toggle" type="button" aria-pressed="false">Fullscreen</button>
       </nav>
     </div>
   </header>

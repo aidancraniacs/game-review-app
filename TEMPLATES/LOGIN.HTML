@@ -2,7 +2,13 @@
 {% block content %}
 <section class="form-card">
   <h2>Sign in</h2>
-  <form id="loginForm" method="post" action="{{ url_for('login') }}">
+  <form
+    id="loginForm"
+    method="post"
+    action="{{ url_for('login') }}"
+    data-no-pjax
+  >
+
     <label>Username or Email
       <input name="identifier" type="text" required />
     </label>
