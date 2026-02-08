@@ -1,4 +1,5 @@
-:root{
+/* Base styles and variables */
+:root{ 
   --bg:#0f1724;
   --card:#0b1220;
   --accent:#7dd3fc;
@@ -14,12 +15,13 @@
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   box-sizing: border-box;
 }
-
+/* Reset and base styles */
 *,
 *::before,
 *::after { box-sizing: inherit; }
+/* Remove default margins and set height for full page layout */
 html, body { height: 100%; margin: 0; }
-
+/* Scrollbar styles */
 body {
   background: linear-gradient(180deg, var(--bg), #071022 80%);
   color: var(--text);
@@ -31,13 +33,13 @@ body {
   min-height: 100vh;
   overflow: hidden;
 }
-
+/* Layout styles */
 .container {
   max-width: 980px;
   margin: 0 auto;
   padding: 0 28px;
 }
-
+/* Header and footer styles */
 .site-header {
   position: fixed;
   top: 0;
@@ -50,12 +52,14 @@ body {
   z-index: 40;
   border-bottom: 1px solid rgba(255,255,255,0.02);
 }
+/* Header inner container for spacing and alignment */
 .header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
 }
+/* Brand styles */
 .brand {
   font-weight: 700;
   color: var(--accent);
@@ -63,8 +67,8 @@ body {
   font-size: 1.05rem;
   letter-spacing: 1px;
 }
+/* Navigation actions styles */
 .nav-actions { display: flex; align-items: center; gap: 10px; }
-
 .main {
   flex: 1 1 auto;
   margin-top: var(--header-h);
@@ -76,16 +80,16 @@ body {
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.1) transparent;
 }
-
+/* Main content styles */
 .main-content {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - var(--header-h) - var(--footer-h));
   padding-top: 24px;
-  padding-bottom: 24px;
+  padding-bottom: calc(24px + var(--footer-h));
 }
-
+/* Button styles */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -99,21 +103,23 @@ body {
   border: none;
   cursor: pointer;
 }
+/* Ghost button variant */
 .btn.ghost {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.06);
   color: var(--text);
 }
+/* Button size variants */
 .btn.large { padding: 14px 20px; font-size: 1rem; border-radius: 14px; }
-
+/* Hero section styles */
 .hero { width: 100%; text-align: center; padding: 0 12px; }
 .hero-inner { width: 100%; max-width: 720px; margin: 0 auto; }
-
 .hero-inner {
   transform: translateX(6px);
 }
-
+/* Hero section styles */
 .hero h1 { font-size: 2rem; margin: 0 0 12px; }
+/* Lead paragraph styles with transition for smooth hiding when empty */
 .lead {
   color: var(--muted);
   margin: 0 0 20px;
@@ -125,15 +131,15 @@ body {
   line-height: 1.3;
   word-break: break-word;
 }
-
+/* Hide lead paragraph when empty, with a smooth transition */
 .lead:empty {
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
 }
-
+/* Call to action button group styles */
 .cta { display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap; }
-
+/* Form card styles */
 .form-card {
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   border-radius: var(--radius);
@@ -142,8 +148,10 @@ body {
   margin: 28px auto;
   box-shadow: 0 6px 30px rgba(2,6,23,0.6);
 }
+/* Form styles */
 .form-card h2 { margin-top: 0; }
 label { display: block; margin-bottom: 12px; color: var(--muted); font-size: 0.95rem; }
+/* Input field styles */
 input[type="text"], input[type="email"], input[type="password"] {
   width: 100%;
   padding: 12px;
@@ -154,7 +162,7 @@ input[type="text"], input[type="email"], input[type="password"] {
   outline: none;
   font-size: 0.95rem;
 }
-
+/* Flash message styles */
 .flash-overlay {
   position: fixed;
   top: calc(var(--header-h) + 12px);
@@ -164,7 +172,9 @@ input[type="text"], input[type="email"], input[type="password"] {
   z-index: 60;
   pointer-events: none;
 }
+/* Flash message container styles */
 .flash-wrap { display: flex; flex-direction: column; gap: 8px; pointer-events: auto; }
+/* Flash message styles */
 .flash {
   padding: 10px 14px;
   border-radius: 8px;
@@ -172,10 +182,13 @@ input[type="text"], input[type="email"], input[type="password"] {
   box-shadow: 0 6px 18px rgba(2,6,23,0.45);
   font-weight: 600;
 }
+/* Flash message variants */
 .flash.success { background: rgba(52,211,153,0.12); color: var(--success); }
+/* Error flash message styles */
 .flash.error { background: rgba(251,113,133,0.08); color: var(--error); }
+/* Info flash message styles */
 .flash.info { background: rgba(96,165,250,0.06); color: var(--accent-2); }
-
+/* Footer styles */
 .site-footer {
   position: fixed;
   left: 0;
@@ -189,112 +202,65 @@ input[type="text"], input[type="email"], input[type="password"] {
   z-index: 30;
   border-top: 1px solid rgba(255,255,255,0.02);
 }
+/* Footer inner container for spacing and alignment */
 .footer-inner { width: 100%; text-align: center; }
-
-.fullscreen-toggle { margin-left: 6px; padding: 8px 10px; font-size: 0.9rem; }
-.fullscreen-toggle[aria-pressed="true"] { box-shadow: 0 0 0 2px rgba(96,165,250,0.12) inset; }
-
-.welcome{margin-right:12px;color:var(--muted)}
-
-@media (max-width: 640px) {
-  .hero h1 { font-size: 1.5rem; }
-  .lead { font-size: 0.95rem; min-height: 1.2rem; }
-  .container { padding: 0 16px; }
-  .nav-actions { gap: 8px; }
-  .hero-inner { transform: translateX(0); }
-}
-
-.fs-restore-toast {
-  position: fixed;
-  right: 20px;
-  bottom: 90px;
-  z-index: 120;
-  background: linear-gradient(180deg, rgba(10,14,20,0.9), rgba(6,10,16,0.95));
-  color: var(--text);
-  border-radius: 12px;
-  padding: 10px 12px;
-  box-shadow: 0 8px 30px rgba(2,6,23,0.6);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 220ms ease, transform 220ms ease;
-  min-width: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.fs-restore-toast.fs-restore-show {
-  opacity: 1;
-  transform: translateY(0);
-}
-.fs-restore-toast.fs-restore-hide {
-  opacity: 0;
-  transform: translateY(8px);
-}
-.fs-restore-inner { display:flex; gap:8px; align-items:center; justify-content:center; width:100%; }
-.fs-restore-inner span { color: var(--muted); font-weight:600; font-size:0.95rem; }
-.fs-restore-inner .btn { padding:6px 10px; font-size:0.9rem; }
-.fs-restore-inner .btn.ghost { border-color: rgba(255,255,255,0.06); color:var(--text); }
-
-.catalogue-page {
-  width: 100%;
-}
-
+/* Catalogue section styles */
 .catalogue-section {
   margin-bottom: 48px;
 }
-
+/* Section header styles */
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
 }
-
+/* Section title styles */
 .game-row {
   display: flex;
   gap: 16px;
   overflow-x: auto;
   padding-bottom: 8px;
 }
-
+/* Game card styles */
 .game-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
 }
-
+/* Game card styles */
 .game-card {
   background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
   border-radius: 14px;
   padding: 16px;
   box-shadow: 0 6px 20px rgba(2,6,23,0.55);
 }
-
+/* Vertical layout for game cards */
 .game-card.vertical {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
+/* Horizontal layout for game cards */
 .game-card h3 {
   margin: 0;
   font-size: 1.05rem;
 }
-
+/* Game info styles */
 .game-info p {
   font-size: 0.9rem;
 }
-
+/* Rating styles */
 .rating {
   font-weight: 700;
   color: var(--accent);
 }
-
+/* Button size variants */
 .btn.small {
   padding: 8px 12px;
   font-size: 0.85rem;
 }
-
+/* Cover image styles */
 .cover {
   width: 100%;
   aspect-ratio: 3 / 4;
@@ -303,35 +269,35 @@ input[type="text"], input[type="email"], input[type="password"] {
   overflow: hidden;
   margin-bottom: 10px;
 }
-
+/* Larger cover variant for featured games */
 .cover.large {
   aspect-ratio: 2 / 3;
 }
-
+/* Cover image styles */
 .cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
-
+/* Horizontal layout adjustments for game cards */
 .game-card.horizontal .cover {
   aspect-ratio: 2 / 3;
 }
-
+/* Horizontal layout adjustments for game cards */
 .game-card.horizontal {
   min-width: 180px;
   max-width: 180px;
 }
-
+/* Game info styles for horizontal layout */
 .game-info {
   padding-top: 6px;
 }
-
+/* Textarea styles for review forms */
 body {
   overflow: hidden;
 }
-
+/* Textarea styles for review forms */
 textarea {
   width: 100%;
   padding: 12px;
@@ -342,57 +308,58 @@ textarea {
   resize: vertical;
   font-size: 0.95rem;
 }
-
+/* Button hover and focus styles */
 .btn:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
 }
-
+/* Button focus styles for accessibility */
 .btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-
+/* Input and textarea focus styles */
 input:focus-visible,
 textarea:focus-visible {
   border-color: rgba(125, 211, 252, 0.6);
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-
+/* Scrollbar styles for game rows */
 .game-row::-webkit-scrollbar {
   height: 6px;
 }
+/* Scrollbar thumb styles for game rows */
 .game-row::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.1);
   border-radius: 6px;
 }
-
+/* Scrollbar thumb hover styles for game rows */
 *::-webkit-scrollbar {
   width: 8px;
   height: 6px;
 }
-
+/* Scrollbar thumb styles for all scrollable elements */
 *::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.1);
   border-radius: 8px;
 }
-
+/* Scrollbar thumb hover styles for all scrollable elements */
 *::-webkit-scrollbar-thumb:hover {
   background: rgba(255,255,255,0.18);
 }
-
+/* Scrollbar track styles for all scrollable elements */
 *::-webkit-scrollbar-track {
   background: transparent;
 }
-
+/* Star rating styles */
 .star-rating {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-bottom: 14px;
 }
-
+/* Star button styles */
 .star-rating button {
   background: none;
   border: none;
@@ -402,25 +369,25 @@ textarea:focus-visible {
   padding: 0;
   transition: color 150ms ease, transform 150ms ease;
 }
-
+/* Star button hover and active styles */
 .star-rating button:hover,
 .star-rating button.active {
   color: var(--accent);
   transform: scale(1.1);
 }
-
+/* Rating text styles */
 .rating-text {
   margin-left: 10px;
   font-size: 0.9rem;
   color: var(--muted);
 }
-
+/* Rating header styles */
 .rating-header {
   color: var(--accent);
   font-weight: 700;
   margin-bottom: 12px;
 }
-
+/* Star button styles for review forms */
 .star-rating button {
   background: none;
   border: none;
@@ -428,20 +395,20 @@ textarea:focus-visible {
   cursor: pointer;
   color: #444;
 }
-
+/* Star button hover and active styles for review forms */
 .star-rating button.active {
   color: gold;
 }
-
+/* Star button hover styles for review forms */
 .star-rating button:hover {
   transform: scale(1.1);
 }
-
+/* Game detail page styles */
 .game-detail {
   max-width: 1000px;
   margin: 0 auto;
 }
-
+/* Game detail header styles */
 .game-detail-header {
   display: grid;
   grid-template-columns: 220px 1fr;
@@ -449,7 +416,7 @@ textarea:focus-visible {
   align-items: start;
   margin-bottom: 32px;
 }
-
+/* Game cover styles for game detail page */
 .game-cover img {
   width: 100%;
   max-width: 220px;
@@ -458,33 +425,31 @@ textarea:focus-visible {
   border-radius: 12px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
-
+/* Game meta styles for game detail page */
 .game-meta h1 {
   font-size: 2rem;
   margin-bottom: 8px;
 }
-
+/* Rating styles for game detail page */
 .game-meta .rating.big {
   font-size: 1.1rem;
   margin-bottom: 12px;
 }
-
+/* Description styles for game detail page */
 .game-meta .description {
   max-width: 600px;
   line-height: 1.6;
   color: #cbd5f5;
 }
-
+/* Responsive styles for game detail page */
 @media (max-width: 700px) {
   .game-detail-header {
     grid-template-columns: 1fr;
   }
-
   .game-cover img {
     max-width: 180px;
     margin: 0 auto;
   }
-
   .game-meta {
     text-align: center;
   }
@@ -492,4 +457,372 @@ textarea:focus-visible {
   .game-meta .description {
     margin: 0 auto;
   }
+}
+/* Star button styles for review forms */
+.star-rating button {
+  transition: transform 120ms ease, color 120ms ease;
+}
+/* Star button hover styles for review forms */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.75);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+}
+/* Modal styles */
+.modal {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+/* Modal action button styles */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+/* Hide class for modals and other elements */
+.hidden {
+  display: none;
+}
+/* Show class for modals and other elements */
+.modal {
+  animation: pop 120ms ease-out;
+}
+/* Pop animation for modals and other elements */
+@keyframes pop {
+  from { transform: scale(.96); opacity: .5; }
+  to { transform: scale(1); opacity: 1; }
+}
+/* Game link styles for game cards */
+.game-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+/* Remove visited link colour change for game links */
+.game-link:visited {
+  color: inherit;
+}
+/* Hover styles for game links and cards */
+.game-link:hover .game-card {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+/* Ensure game cards are clickable and inherit link styles */
+.game-card a {
+  color: inherit;
+  text-decoration: none;
+}
+/* Hover styles for game links and cards */
+.game-link:hover h3 {
+  text-decoration: underline;
+}
+/* Small link styles for less prominent links */
+.small-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+/* Remove visited link colour change for small links */
+.small-link:visited {
+  color: var(--muted);
+}
+/* Hover styles for small links */
+.small-link:hover {
+  text-decoration: underline;
+}
+/* Transition styles for interactive elements */
+.small-link {
+  transition: color 120ms ease;
+}
+/* Hover styles for small links */
+.small-link:hover {
+  color: var(--text);
+}
+/* Game card styles with transitions for hover effects */
+.game-card {
+  transition:
+    transform 160ms cubic-bezier(.2,.8,.2,1),
+    box-shadow 160ms cubic-bezier(.2,.8,.2,1);
+  will-change: transform;
+  position: relative;
+  overflow: hidden;
+}
+/* Hover styles for game cards */
+.game-card:hover {
+  box-shadow: 0 18px 40px rgba(0,0,0,.25);
+}
+/* Transition styles for cover images */
+.cover img {
+  transition: transform 220ms ease;
+}
+/* Hover styles for cover images */
+.game-link:hover .cover img,
+.game-card:hover .cover img {
+  transform: scale(1.04);
+}
+/* After pseudo element for game cards to create a subtle highlight effect on hover */
+.game-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    140px 100px at var(--mx, 50%) var(--my, 50%),
+    rgba(255,255,255,0.28),
+    rgba(255,255,255,0.12) 40%,
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+/* Hover styles for game cards to show the highlight effect */
+.game-card:hover::after {
+  opacity: 1;
+  filter: saturate(1.1);
+}
+/* Hover styles for game links to show the highlight effect on the card */
+.game-link:hover .game-card::after,
+.game-card:hover::after {
+  opacity: 1;
+}
+/* Transition styles for game card titles */
+.game-card h3 {
+  transition: transform 160ms ease, color 160ms ease;
+}
+/* Hover styles for game card titles */
+.game-link:hover h3 {
+  transform: translateX(2px);
+}
+/* Transition styles for game info */
+@media (prefers-reduced-motion: reduce) {
+  .game-card,
+  .cover img,
+  .btn {
+    transition: none;
+    transform: none;
+  }
+}
+/* Transition styles for game card highlight effect */
+.game-card::after {
+  transition: background-position 80ms linear;
+}
+/* Hover styles for game card highlight effect */
+.game-card::after {
+  pointer-events: none;
+}
+/* Transition styles for interactive elements */
+.btn,
+.star-rating button,
+.small-link {
+  transition: transform 160ms cubic-bezier(.2,.8,.2,1);
+  will-change: transform;
+}
+/* Hover styles for buttons */
+.star-rating button:hover {
+  color: var(--accent);
+}
+/* Hover styles for small links */
+@media (prefers-reduced-motion: reduce) {
+  .game-card,
+  .btn,
+  .star-rating button,
+  .small-link {
+    transform: none !important;
+  }
+}
+/* Remove highlight effect for vertical game cards */
+.game-card.vertical::after {
+  display: none;
+}
+/* Transition styles for vertical game cards */
+.game-card.vertical {
+  transition-duration: 220ms;
+}
+/* Hover styles for vertical game cards */
+.catalogue-page:has(.game-card:hover),
+.catalogue-page:has(.game-card:focus-within) {
+  --dim-opacity: 0.65;
+  --dim-blur: none;
+}
+/* Dim non hovered game cards when one is hovered or focused */
+.catalogue-page .game-card {
+  opacity: 1;
+  filter: none;
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease,
+    transform 180ms ease;
+}
+/* Dim non hovered game cards when one is hovered or focused */
+.catalogue-page:has(.game-card:hover) .game-card:not(:hover),
+.catalogue-page:has(.game-card:focus-within) .game-card:not(:focus-within) {
+  opacity: var(--dim-opacity);
+  filter: blur(var(--dim-blur));
+}
+/* Reduce dimming effect for the last section to keep it more visible */
+.catalogue-section:last-of-type {
+  --dim-opacity: 0.8;
+  --dim-blur: 0.5px;
+}
+/* Focus styles for game cards */
+.game-card:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* Game info styles with text truncation */
+.game-info p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* Truncate description to 3 lines */
+.review-title {
+  margin: 6px 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+/* Truncate content to 4 lines */
+.review-card {
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.25);
+
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+/* Hover styles for review cards */
+.review-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(125, 211, 252, 0.35);
+}
+/* Review header styles */
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+/* Reviewer name styles */
+.review-header strong {
+  font-size: 0.95rem;
+}
+/* Star rating styles for reviews */
+.review-header .stars {
+  color: var(--accent);
+  font-weight: 600;
+}
+/* Review title styles */
+.review-title {
+  margin: 6px 0 4px;
+  font-size: 0.95rem;
+}
+/* Review content styles */
+.review-content {
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+/* Review card styles with a vertical accent line */
+.review-card {
+  position: relative;
+}
+/* Accent line on the left side of review cards */
+.review-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 4px;
+  opacity: 0.6;
+}
+/* Adjust accent line colour for negative reviews */
+.review-item {
+  display: block;
+}
+/* Accent line colour for negative reviews */
+.review-item.hidden {
+  display: none;
+}
+/* Accent line colour for negative reviews */
+.review-item.visible {
+  display: block;
+}
+/* Accent line colour for negative reviews */
+.load-more-wrap {
+  text-align: center;
+  margin-top: 16px;
+}
+/* Ensure footer stays above other content */
+footer {
+  z-index: 10;
+}
+/* Ensure load more button stays above the footer */
+#load-more-reviews {
+  position: relative;
+  z-index: 20;
+}
+/* Review actions styles */
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+/* Form styles for review actions */
+.review-actions form {
+  margin: 0;
+}
+/* Button styles for review actions */
+.review-actions .btn {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+}
+/* Active state styles for like and dislike buttons */
+.review-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+/* Button styles for review actions with transitions for active states */
+.review-actions .btn {
+  position: relative;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.15s ease,
+    color 0.2s ease;
+}
+/* Active state styles for like and dislike buttons with glowing effect */
+.review-actions .btn.active-like {
+  color: #7dd3fc;
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.4),
+    0 0 14px rgba(125, 211, 252, 0.45);
+}
+/* Active state styles for dislike button with glowing effect */
+.review-actions .btn.active-dislike {
+  color: #fb7185;
+  box-shadow:
+    0 0 0 1px rgba(251, 113, 133, 0.4),
+    0 0 14px rgba(251, 113, 133, 0.45);
+}
+/* Hover styles for like and dislike buttons */
+.review-actions .btn.pop {
+  transform: scale(1.08);
 }

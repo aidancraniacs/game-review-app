@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -45,5 +46,20 @@
   <footer class="site-footer" role="contentinfo">
     <div class="container footer-inner">© Review Forge</div>
   </footer>
+
+  <div class="modal-backdrop hidden" id="confirm-backdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <h3 id="confirm-title">Delete review?</h3>
+      <p class="muted">
+        This action can’t be undone. Your review will be permanently removed.
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn ghost" id="confirm-cancel">Cancel</button>
+        <button class="btn danger" id="confirm-ok">Delete</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

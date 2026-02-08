@@ -1,24 +1,33 @@
 {% extends "BASE.HTML" %}
 {% block content %}
-<section class="hero hero-centered" aria-labelledby="hero-title">
-  <div class="hero-inner" id="hero-inner">
-    <h1 id="hero-title">Discover and review your favourite games</h1>
 
-    {% if not user %}
-      <p class="lead">{{ '' if hide_hero_lead else 'Sign up to leave reviews and rate games.' }}</p>
-    {% endif %}
+  <section class="hero hero-centered home-hero" aria-labelledby="hero-title">
+    <div class="hero-inner" id="hero-inner">
+      <h1 id="hero-title">Discover and review your favourite games</h1>
 
-    <div class="cta" role="group" aria-label="Primary actions">
       {% if not user %}
-        <a class="btn large" href="{{ url_for('register') }}" data-pjax>Create an account</a>
-        <a class="btn ghost large" href="{{ url_for('login') }}" data-pjax>Sign in</a>
-      {% else %}
-        <a class="btn large" href="{{ url_for('games') }}" data-pjax>
-          Browse games
-        </a>
-
+        <p class="lead">
+          {{ '' if hide_hero_lead else 'Sign up to leave reviews and rate games.' }}
+        </p>
       {% endif %}
+
+      <div class="cta" role="group" aria-label="Primary actions">
+        {% if not user %}
+          <a class="btn large" href="{{ url_for('register') }}" data-pjax>
+            Create an account
+          </a>
+          <a class="btn ghost large" href="{{ url_for('login') }}" data-pjax>
+            Sign in
+          </a>
+        {% else %}
+          <a class="btn large" href="{{ url_for('games') }}" data-pjax>
+            Browse games
+          </a>
+        {% endif %}
+      </div>
     </div>
-  </div>
-</section>
+  </section>
+
+</div>
+
 {% endblock %}

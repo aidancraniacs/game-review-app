@@ -104,13 +104,31 @@
 
           <form method="post" action="{{ url_for('games') }}" data-pjax>
             <input type="hidden" name="game_id" value="{{ game.id }}">
+              <label>
+                Review title
+                  <input
+                    type="text"
+                    name="title"
+                    maxlength="100"
+                    placeholder="Summarise your thoughts"
+                    value="{{ my_review.title if my_review else '' }}"
+                  />
+              </label>
 
             <h4 class="rating-header">
-              Your rating: <span class="rating-value">—</span>
+              Your rating:
+              <span class="rating-value">
+                {{ my_review.rating if my_review else '—' }}
+              </span>
             </h4>
 
             <div class="star-rating" aria-label="Star rating">
-              <input type="hidden" name="rating" required />
+              <input
+                type="hidden"
+                name="rating"
+                value="{{ my_review.rating if my_review else '' }}"
+                required
+              />
 
               <button type="button">★</button>
               <button type="button">★</button>
@@ -123,16 +141,18 @@
 
             <label>
               Review
-              <textarea name="content" rows="2"></textarea>
+              <textarea name="content" rows="2">{{ my_review.content if my_review else '' }}</textarea>
             </label>
 
-            <button class="btn small" type="submit">Submit</button>
+            <button class="btn small" type="submit">
+              {{ 'Update review' if my_review else 'Submit review' }}
+            </button>
           </form>
 
           {% if my_review %}
-            <form
-              method="post"
+            <form method="post"
               action="{{ url_for('delete_review', review_id=my_review.id) }}"
+              data-confirm
               style="margin-top:8px"
             >
               <button class="btn ghost small" type="submit">

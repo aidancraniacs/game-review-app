@@ -1,24 +1,30 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from flask_login import login_user, LoginManager, current_user, login_required
+from flask_login import (
+    login_user, LoginManager, current_user,
+    login_required, logout_user, UserMixin
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from sqlalchemy.sql import func
+from flask_sqlalchemy import SQLAlchemy
 
+#app setup with configuration for secret key and database URI and SQLAlchemy initialisation
 app = Flask(__name__, template_folder='TEMPLATES', static_folder='STATIC')
-app.config['SECRET_KEY'] = 'dev-key-change-later'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev')
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'DATABASE.DB')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
-
 db = SQLAlchemy(app)
+
+#models for users, games, reviews and review likes
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(30), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+
 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,20 +35,36 @@ class Game(db.Model):
 
     reviews = db.relationship('Review', backref='game', lazy=True)
 
+
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
+    title = db.Column(db.String(100))
     content = db.Column(db.Text)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     user = db.relationship('User', backref='reviews')
+    likes = db.relationship('ReviewLike', backref='review', lazy=True)
 
     __table_args__ = (
         db.UniqueConstraint('user_id', 'game_id', name='unique_user_game_review'),
     )
 
+
+class ReviewLike(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    review_id = db.Column(db.Integer, db.ForeignKey('review.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    value = db.Column(db.Integer, nullable=False)  #1 for like, -1 for dislike
+
+    __table_args__ = (
+        db.UniqueConstraint('review_id', 'user_id', name='unique_review_like'),
+    )
+
+
+#login manager setup for handling user sessions and authentication
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
@@ -50,15 +72,20 @@ login_manager.login_view = "login"
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-def is_pjax_request():
-    return request.headers.get('X-PJAX') == 'true'
-
-
+#routes for homepage, game catalogue, game detail, user registration, login/logout, review submission and review reactions
 @app.route('/')
 def index():
     user = current_user if current_user.is_authenticated else None
     hide_hero_lead = session.pop('hide_hero_lead', False)
-    return render_template('INDEX.HTML', user=user, hide_hero_lead=hide_hero_lead)
+    games = Game.query.all()
+
+    return render_template(
+        'INDEX.HTML',
+        user=user,
+        hide_hero_lead=hide_hero_lead,
+        games=games
+    )
+
 
 @app.route('/games', methods=['GET', 'POST'])
 @login_required
@@ -68,9 +95,10 @@ def games():
     if request.method == 'POST':
         game_id = request.form.get('game_id', type=int)
         rating = request.form.get('rating', type=int)
+        title = (request.form.get('title') or '').strip()
         content = (request.form.get('content') or '').strip()
 
-        if not game_id or not rating or rating < 1 or rating > 5:
+        if not game_id or not rating or not (1 <= rating <= 5):
             flash('Please select a valid rating.', 'error')
             return redirect(url_for('games'))
 
@@ -81,16 +109,17 @@ def games():
 
         if existing:
             existing.rating = rating
+            existing.title = title
             existing.content = content
             flash('Your review was updated.', 'success')
         else:
-            review = Review(
+            db.session.add(Review(
                 user_id=user.id,
                 game_id=game_id,
                 rating=rating,
+                title=title,
                 content=content
-            )
-            db.session.add(review)
+            ))
             flash('Review submitted. Thanks!', 'success')
 
         db.session.commit()
@@ -114,6 +143,55 @@ def games():
         new_games=games[6:12]
     )
 
+
+#like/dislike reviews and return updated counts and user reaction
+from flask import jsonify
+
+@app.route('/reviews/<int:review_id>/react', methods=['POST'])
+@login_required
+def react_review(review_id):
+    value = request.form.get('value', type=int)
+
+    if value not in (1, -1):
+        return {"error": "invalid reaction"}, 400
+
+    existing = ReviewLike.query.filter_by(
+        review_id=review_id,
+        user_id=current_user.id
+    ).first()
+
+    if existing:
+        if existing.value == value:
+            #clicking the same reaction again removes it
+            db.session.delete(existing)
+        else:
+            #switching from like to dislike or vice versa
+            existing.value = value
+    else:
+        db.session.add(ReviewLike(
+            review_id=review_id,
+            user_id=current_user.id,
+            value=value
+        ))
+
+    db.session.commit()
+
+    likes = ReviewLike.query.filter_by(review_id=review_id, value=1).count()
+    dislikes = ReviewLike.query.filter_by(review_id=review_id, value=-1).count()
+
+    existing = ReviewLike.query.filter_by(
+        review_id=review_id,
+        user_id=current_user.id
+    ).first()
+
+    return {
+        "likes": likes,
+        "dislikes": dislikes,
+        "user_reaction": existing.value if existing else 0
+    }
+
+
+#delete review route with permission check to ensure users can only delete own reviews
 @app.route('/reviews/<int:review_id>/delete', methods=['POST'])
 @login_required
 def delete_review(review_id):
@@ -129,10 +207,11 @@ def delete_review(review_id):
     flash("Your review was deleted.", "success")
     return redirect(url_for('games'))
 
+
+#game detail page showing game info, reviews, avg rating and review count
 @app.route("/games/<int:game_id>")
 def game_detail(game_id):
     user = current_user if current_user.is_authenticated else None
-
     game = Game.query.get_or_404(game_id)
 
     reviews = (
@@ -143,7 +222,7 @@ def game_detail(game_id):
     )
 
     avg_rating = (
-        db.session.query(db.func.avg(Review.rating))
+        db.session.query(func.avg(Review.rating))
         .filter(Review.game_id == game.id)
         .scalar()
     )
@@ -159,6 +238,8 @@ def game_detail(game_id):
         review_count=len(reviews)
     )
 
+
+#authentication routes for user registration, login and logout with form validation and feedback messages
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -170,16 +251,16 @@ def register():
             flash('All fields are required.', 'error')
             return render_template('REGISTER.HTML')
 
-        password_hash = generate_password_hash(password)
-
-        if User.query.filter((User.username == username) | (User.email == email)).first():
+        if User.query.filter(
+            (User.username == username) | (User.email == email)
+        ).first():
             flash('Username or email already exists.', 'error')
             return render_template('REGISTER.HTML')
 
         user = User(
             username=username,
             email=email,
-            password_hash=password_hash
+            password_hash=generate_password_hash(password)
         )
 
         db.session.add(user)
@@ -211,40 +292,40 @@ def login():
 
     return render_template("LOGIN.HTML")
 
-from flask_login import logout_user
-
 @app.route('/logout')
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
+
+#seed the database with an initial set of games if its empty
 def seed_games():
     if Game.query.first():
         return
 
     games = [
         ("Minecraft", "A sandbox game about placing blocks and adventures.", None, "covers/minecraft.jpg"),
-        ("Subnautica", "An underwater survival adventure on an alien ocean planet.", 2018, "covers/subnautica.jpg"),
-        ("Geometry Dash", "A fast-paced rhythm platformer.", None, "covers/geometry-dash.jpg"),
+        ("Subnautica", "An underwater survival adventure.", 2018, "covers/subnautica.jpg"),
+        ("Geometry Dash", "A rhythm platformer.", None, "covers/geometry-dash.jpg"),
         ("Elden Ring", "An open-world action RPG.", 2022, "covers/elden-ring.jpg"),
-        ("Stardew Valley", "A relaxing farming and life simulation game.", None, "covers/stardew-valley.jpg"),
-        ("Hollow Knight", "A beautifully animated metroidvania.", None, "covers/hollow-knight.jpg"),
-        ("Celeste", "A challenging platformer.", None, "covers/celeste.jpg"),
-        ("Terraria", "A 2D sandbox adventure.", None, "covers/terraria.jpg"),
-        ("Dead Cells", "A fast-paced roguelike action platformer.", None, "covers/dead-cells.jpg"),
-        ("Undertale", "A story-driven RPG.", None, "covers/undertale.jpg"),
-        ("Hades", "A roguelike dungeon crawler.", None, "covers/hades.jpg"),
-        ("Cuphead", "A run-and-gun game with hand-drawn animation.", None, "covers/cuphead.jpg"),
-        ("Portal 2", "A puzzle game involving portals.", None, "covers/portal-2.jpg"),
-        ("DOOM Eternal", "A fast-paced FPS.", None, "covers/doom-eternal.jpg"),
-        ("The Witcher 3", "A massive open-world RPG.", None, "covers/the-witcher-3.jpg"),
-        ("Skyrim", "An open-world fantasy RPG.", None, "covers/skyrim.jpg"),
-        ("Red Dead Redemption 2", "A cinematic western adventure.", None, "covers/red-dead-redemption-2.jpg"),
-        ("Dark Souls III", "A challenging action RPG.", None, "covers/dark-souls-3.jpg"),
-        ("Sekiro", "A brutal precision-based action game.", None, "covers/sekiro.jpg"),
-        ("Slay the Spire", "A roguelike deck builder.", None, "covers/slay-the-spire.jpg"),
-        ("Factorio", "A game about building factories.", None, "covers/factorio.jpg"),
+        ("Stardew Valley", "A farming simulation game.", 2016, "covers/stardew-valley.jpg"),
+        ("Hollow Knight", "A challenging action-adventure game.", 2017, "covers/hollow-knight.jpg"),
+        ("Celeste", "A platformer about climbing a mountain.", 2018, "covers/celeste.jpg"),
+        ("Terraria", "A 2D sandbox adventure game.", None, "covers/terraria.jpg"),
+        ("Dead Cells", "A rogue-lite metroidvania game.", 2018, "covers/dead-cells.jpg"),
+        ("Undertale", "An RPG where you don't have to kill anyone.", 2015, "covers/undertale.jpg"),
+        ("Hades", "A rogue-like dungeon crawler.", 2020, "covers/hades.jpg"),
+        ("Cuphead", "A run-and-gun action game with a 1930s cartoon art style.", 2017, "covers/cuphead.jpg"),
+        ("Portal 2", "A first-person puzzle-platform game.", 2011, "covers/portal-2.jpg"),
+        ("DOOM Eternal", "A fast-paced first-person shooter.", 2020, "covers/doom-eternal.jpg"),
+        ("Skyrim", "An open-world action RPG set in a fantasy world.", 2011, "covers/skyrim.jpg"),
+        ("Red Dead Redemption 2", "An open-world action-adventure game set in the Wild West.", 2018, "covers/red-dead-redemption-2.jpg"),
+        ("Dark Souls III", "An action RPG known for its difficulty.", 2016, "covers/dark-souls-3.jpg"),
+        ("Sekiro: Shadows Die Twice", "An action-adventure game with a focus on stealth and combat.", 2019, "covers/sekiro.jpg"),
+        ("Slay the Spire", "A deck-building rogue-like game.", 2019, "covers/slay-the-spire.jpg"),
+        ("Factorio", "A game about building and managing factories.", None, "covers/factorio.jpg"),
+
     ]
 
     for title, desc, year, cover in games:
@@ -261,6 +342,7 @@ def seed_games():
 with app.app_context():
     db.create_all()
     seed_games()
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
