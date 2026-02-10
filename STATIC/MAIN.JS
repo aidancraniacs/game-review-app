@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const newHeader = doc.getElementById('header-inner');
     if (newHeader && findHeaderInner()) {
-      findHeaderInner().innerHTML = newHeader.innerHTML;
+    findHeaderInner().innerHTML = newHeader.innerHTML;
     }
 
     replaceFlashOverlayFromDoc(doc);
@@ -74,10 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     history.pushState({ pjax: true }, '', finalUrl || location.href);
 
+    scrollMainToTop();
+
     bindAll();
     autoHideFlash();
     clearPasswordInputsSafely();
   }
+
 //submit form via AJAX, handle JSON redirect or replace content from response, fallback to full reload on error
   async function submitFormAjax(url, formData) {
     try {
@@ -250,6 +253,13 @@ function bindReviewReactions() {
       if (visibleReviewCount >= reviews.length) btn.style.display = 'none';
     };
   }
+
+  function scrollMainToTop() {
+  const main = document.querySelector('.main');
+  if (main) {
+    main.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }
+}
 
 //bind all interactive elements (called on initial load and after PJAX content replacement)
 

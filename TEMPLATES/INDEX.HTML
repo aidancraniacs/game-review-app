@@ -1,32 +1,90 @@
 {% extends "BASE.HTML" %}
 {% block content %}
 
-  <section class="hero hero-centered home-hero" aria-labelledby="hero-title">
-    <div class="hero-inner" id="hero-inner">
-      <h1 id="hero-title">Discover and review your favourite games</h1>
+<!--home/landing page
+     purpose-
+     -first impression of the app
+     -explain value quickly
+     -funnel users into auth or browsing-->
 
+<section
+  class="hero hero-centered home-hero"
+  aria-labelledby="hero-title"
+>
+
+  <!--hero inner wrapper
+      keeps content vertically+horizontally centered
+      also gives a single anchor for subtle animations-->
+  <div class="hero-inner" id="hero-inner">
+
+    <!--primary headline
+        clear, action oriented value proposition-->
+    <h1 id="hero-title">
+      Discover and review your favourite games
+    </h1>
+
+    <!--supporting subheadline
+        lower visual weight to avoid competing with the main title
+        reinforces community+discovery aspect-->
+    <h3 id="hero-title">
+      <span style="font-weight: normal;">
+        Explore the various thoughts and insights from other reviewers
+      </span>
+    </h3>
+
+    <!--optional lead text
+        only shown to logged out users
+        can be suppressed via hide_hero_lead
+        useful for A/B testing or minimal hero states-->
+    {% if not user %}
+      <p class="lead">
+        {{ '' if hide_hero_lead else 'Sign up to leave reviews and rate games.' }}
+      </p>
+    {% endif %}
+
+    <!--call to action group
+        main conversion point of the homepage-->
+    <div
+      class="cta"
+      role="group"
+      aria-label="Primary actions"
+    >
+
+      <!--logged out state:
+          encourage account creation first,
+          but keep login easily accessible-->
       {% if not user %}
-        <p class="lead">
-          {{ '' if hide_hero_lead else 'Sign up to leave reviews and rate games.' }}
-        </p>
-      {% endif %}
+        <a
+          class="btn large"
+          href="{{ url_for('register') }}"
+          data-pjax
+        >
+          Create an account
+        </a>
 
-      <div class="cta" role="group" aria-label="Primary actions">
-        {% if not user %}
-          <a class="btn large" href="{{ url_for('register') }}" data-pjax>
-            Create an account
-          </a>
-          <a class="btn ghost large" href="{{ url_for('login') }}" data-pjax>
-            Sign in
-          </a>
-        {% else %}
-          <a class="btn large" href="{{ url_for('games') }}" data-pjax>
-            Browse games
-          </a>
-        {% endif %}
-      </div>
+        <a
+          class="btn ghost large"
+          href="{{ url_for('login') }}"
+          data-pjax
+        >
+          Sign in
+        </a>
+
+      <!--logged in state:
+          skip friction and send user straight to content-->
+      {% else %}
+        <a
+          class="btn large"
+          href="{{ url_for('games') }}"
+          data-pjax
+        >
+          Browse games
+        </a>
+      {% endif %}
     </div>
-  </section>
+
+  </div>
+</section>
 
 </div>
 

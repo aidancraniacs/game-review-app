@@ -826,3 +826,12 @@ footer {
 .review-actions .btn.pop {
   transform: scale(1.08);
 }
+.game-row {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+}

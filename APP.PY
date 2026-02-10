@@ -25,7 +25,6 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
 
-
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -34,7 +33,6 @@ class Game(db.Model):
     cover_url = db.Column(db.String(255))
 
     reviews = db.relationship('Review', backref='game', lazy=True)
-
 
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,7 +49,6 @@ class Review(db.Model):
     __table_args__ = (
         db.UniqueConstraint('user_id', 'game_id', name='unique_user_game_review'),
     )
-
 
 class ReviewLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -305,26 +302,26 @@ def seed_games():
         return
 
     games = [
-        ("Minecraft", "A sandbox game about placing blocks and adventures.", None, "covers/minecraft.jpg"),
-        ("Subnautica", "An underwater survival adventure.", 2018, "covers/subnautica.jpg"),
-        ("Geometry Dash", "A rhythm platformer.", None, "covers/geometry-dash.jpg"),
-        ("Elden Ring", "An open-world action RPG.", 2022, "covers/elden-ring.jpg"),
-        ("Stardew Valley", "A farming simulation game.", 2016, "covers/stardew-valley.jpg"),
-        ("Hollow Knight", "A challenging action-adventure game.", 2017, "covers/hollow-knight.jpg"),
-        ("Celeste", "A platformer about climbing a mountain.", 2018, "covers/celeste.jpg"),
-        ("Terraria", "A 2D sandbox adventure game.", None, "covers/terraria.jpg"),
-        ("Dead Cells", "A rogue-lite metroidvania game.", 2018, "covers/dead-cells.jpg"),
-        ("Undertale", "An RPG where you don't have to kill anyone.", 2015, "covers/undertale.jpg"),
-        ("Hades", "A rogue-like dungeon crawler.", 2020, "covers/hades.jpg"),
-        ("Cuphead", "A run-and-gun action game with a 1930s cartoon art style.", 2017, "covers/cuphead.jpg"),
-        ("Portal 2", "A first-person puzzle-platform game.", 2011, "covers/portal-2.jpg"),
-        ("DOOM Eternal", "A fast-paced first-person shooter.", 2020, "covers/doom-eternal.jpg"),
-        ("Skyrim", "An open-world action RPG set in a fantasy world.", 2011, "covers/skyrim.jpg"),
-        ("Red Dead Redemption 2", "An open-world action-adventure game set in the Wild West.", 2018, "covers/red-dead-redemption-2.jpg"),
-        ("Dark Souls III", "An action RPG known for its difficulty.", 2016, "covers/dark-souls-3.jpg"),
-        ("Sekiro: Shadows Die Twice", "An action-adventure game with a focus on stealth and combat.", 2019, "covers/sekiro.jpg"),
-        ("Slay the Spire", "A deck-building rogue-like game.", 2019, "covers/slay-the-spire.jpg"),
-        ("Factorio", "A game about building and managing factories.", None, "covers/factorio.jpg"),
+        ("Minecraft", "Minecraft is a sandbox game where you gather resources, craft tools, and build anything you can imagine while exploring a world made of blocks. You can survive against creatures in Survival mode or create freely without limits in Creative mode, with multiplayer and mods adding even more ways to play. ", None, "covers/minecraft.jpg"),
+        ("Subnautica", "Subnautica is an underwater survival game where you explore an alien ocean filled with strange creatures, deep caves, and vibrant coral reefs. You gather resources, craft gear, and build bases while managing oxygen and navigating the dangers of the planet’s depths. The focus on exploration, atmosphere, and discovery makes each dive feel tense and rewarding.", 2018, "covers/subnautica.jpg"),
+        ("Geometry Dash", "Geometry Dash is a fast-paced rhythm platformer where you guide a geometric icon through obstacle-filled levels synced to energetic music. Precision jumps and quick reflexes are key, and its simple controls make each attempt addictive as you push to master increasingly challenging stages.", None, "covers/geometry-dash.jpg"),
+        ("Elden Ring", "Elden Ring is an open‑world action RPG where you explore the vast Lands Between, battle challenging enemies, and shape your own playstyle through weapons, magic, and character builds. Its mix of exploration, tough combat, and atmospheric storytelling creates a demanding but rewarding adventure.", 2022, "covers/elden-ring.jpg"),
+        ("Stardew Valley", "Stardew Valley is a cozy farming RPG where you restore a rundown farm, grow crops, raise animals, and explore nearby caves while becoming part of a small rural community. Its mix of farming, crafting, relationships, and gentle exploration creates a relaxing, open‑ended experience.", 2016, "covers/stardew-valley.jpg"),
+        ("Hollow Knight", "Hollow Knight is a hand‑drawn Metroidvania where you explore the ruined kingdom of Hallownest, battling corrupted creatures and uncovering its hidden history. Tight combat, atmospheric world‑building, and rewarding exploration make each descent into its depths feel tense and memorable.", 2017, "covers/hollow-knight.jpg"),
+        ("Celeste", "Celeste is a precision platformer about climbing Celeste Mountain as Madeline, overcoming tough obstacles and her own inner struggles. Its tight controls, handcrafted levels, and emotional story create a challenging but uplifting experience.", 2018, "covers/celeste.jpg"),
+        ("Terraria", "Terraria is a 2D sandbox adventure where you explore a procedurally generated world, gather resources, craft gear, and battle bosses as you shape and build the environment around you. Its mix of exploration, combat, and creative freedom lets you play to your preferences.", None, "covers/terraria.jpg"),
+        ("Dead Cells", "Dead Cells is a fast, combat‑focused roguelike where you fight through ever‑changing levels, unlock new weapons and abilities, and learn from each run as you push deeper into a cursed island. Its blend of fluid action, tight controls, and “die‑and‑retry” progression keeps each attempt tense and addictive.", 2018, "covers/dead-cells.jpg"),
+        ("Undertale", "Undertale is a quirky RPG where your choices truly matter as you guide a child through a monster‑filled underground world. You can fight or show mercy, and the game reacts in meaningful ways, blending humor, emotion, and memorable characters into a unique story-driven adventure.", 2015, "covers/undertale.jpg"),
+        ("Hades", "Hades is a fast, combat‑driven roguelike where you play as Zagreus, battling your way out of the Underworld using a mix of weapons, upgrades, and god‑granted powers. Its quick action, evolving story, and replay‑friendly design make each escape attempt intense and satisfying.", 2020, "covers/hades.jpg"),
+        ("Cuphead", "Cuphead is a run‑and‑gun action game inspired by 1930s cartoons, featuring hand‑drawn animation, jazzy music, and challenging boss‑focused gameplay. You play as Cuphead and face a series of tough, stylish battles as you try to repay a deal gone wrong with the Devil.", 2017, "covers/cuphead.jpg"),
+        ("Portal 2", "Portal 2 is a first‑person puzzle game where you use a portal gun to solve clever physics‑based challenges inside the labs of Aperture Science. Its sharp writing, memorable characters, and inventive co‑op and single‑player puzzles make it a standout mix of humour and brain‑bending design.", 2011, "covers/portal-2.jpg"),
+        ("DOOM Eternal", "DOOM Eternal is a high‑speed first‑person shooter where you become the Slayer, fighting through demon‑infested worlds with aggressive, momentum‑driven combat. Its mix of brutal action, mobility, and over‑the‑top weapons creates an intense, fast‑paced power fantasy.", 2020, "covers/doom-eternal.jpg"),
+        ("Skyrim", "Skyrim is an open‑world fantasy RPG where you explore the vast province of Skyrim, battle dragons, develop your character through skills and gear, and shape your own path through quests and factions. Its freedom to roam, role‑play, and discover makes every playthrough feel different.", 2011, "covers/skyrim.jpg"),
+        ("Red Dead Redemption 2", "Red Dead Redemption 2 is a cinematic open‑world western where you play as Arthur Morgan, an outlaw navigating the fading days of the Wild West. You take on heists, explore rugged frontier landscapes, and make choices that shape the fate of the Van der Linde gang.", 2018, "covers/red-dead-redemption-2.jpg"),
+        ("Dark Souls III", "Dark Souls III is a dark fantasy action RPG where you battle through a decaying world filled with challenging enemies, atmospheric locations, and intense boss fights. Its fast, precise combat and interconnected environments create a demanding but rewarding journey through the series’ final chapter.", 2016, "covers/dark-souls-3.jpg"),
+        ("Sekiro: Shadows Die Twice", "Sekiro: Shadows Die Twice is an action‑adventure game set in a brutal, war‑torn vision of late‑1500s Sengoku‑era Japan. You play as Wolf, a shinobi bound to protect a young lord, using stealth, precise swordplay, and a prosthetic arm equipped with versatile tools to overcome deadly enemies and towering bosses. ", 2019, "covers/sekiro.jpg"),
+        ("Slay the Spire", "Slay the Spire is a single‑player roguelike deck‑builder where you climb a shifting tower, battle enemies, and build a card deck that evolves with every run. You choose from different characters, each with their own card pools and playstyles, and face procedurally generated paths filled with monsters, events, shops, and powerful relics that shape your strategy. ", 2019, "covers/slay-the-spire.jpg"),
+        ("Factorio", "Factorio is a construction and management sim about landing on an alien planet, harvesting resources, and building an ever‑expanding automated factory. You mine ores, research technologies, set up production lines, defend against hostile creatures, and gradually scale your operation from hand‑crafted basics to massive industrial systems.", None, "covers/factorio.jpg"),
 
     ]
 

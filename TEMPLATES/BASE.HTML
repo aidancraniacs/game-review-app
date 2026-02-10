@@ -1,62 +1,126 @@
-
 <!doctype html>
 <html lang="en">
 <head>
+<!--character encoding-->
   <meta charset="utf-8" />
+
+<!--responsive layout on mobile+desktop-->
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<!--page title(overridden per page via jinja block)-->
   <title>{% block title %}Review Forge{% endblock %}</title>
+
+<!--global styles(layout,components,animations)-->
   <link rel="stylesheet" href="{{ url_for('static', filename='STYLES.CSS') }}">
+
+<!--pwa manifest(app name,icons,theme colour)-->
   <link rel="manifest" href="{{ url_for('static', filename='MANIFEST.JSON') }}">
+
+<!--main js:
+    -pjax navigation
+    -scroll control
+    -star ratings
+    -review reactions
+    loaded with defer so DOM is ready first-->
   <script defer src="{{ url_for('static', filename='MAIN.JS') }}"></script>
 </head>
+
 <body>
+<!--fixed site header(always visible)
+    replaced via pjax using #header-inner-->
   <header class="site-header" role="banner">
     <div class="container header-inner" id="header-inner">
-      <a class="brand" href="{{ url_for('index') }}" data-pjax>REVIEW FORGE</a>
-      <nav class="nav-actions" role="navigation" aria-label="Main" id="nav-actions">
+<!--brand logo/home link(pjax enabled)-->
+      <a class="brand" href="{{ url_for('index') }}" data-pjax>
+        REVIEW FORGE
+      </a>
+<!--navigation actions(login/logout)
+    this entire block is replaced on pjax navigation
+    so auth state stays in sync-->
+      <nav class="nav-actions"
+           role="navigation"
+           aria-label="Main"
+           id="nav-actions">
+
         {% if user %}
-          <span class="welcome">Hi, <strong>{{ user.username }}</strong></span>
-          <a class="btn ghost" href="{{ url_for('logout') }}" data-pjax>Logout</a>
+          <span class="welcome">
+            Hi, <strong>{{ user.username }}</strong>
+          </span>
+          <a class="btn ghost" href="{{ url_for('logout') }}" data-pjax>
+            Logout
+          </a>
         {% else %}
-          <a class="btn" href="{{ url_for('login') }}" data-pjax>Login</a>
-          <a class="btn ghost" href="{{ url_for('register') }}" data-pjax>Register</a>
+          <a class="btn" href="{{ url_for('login') }}" data-pjax>
+            Login
+          </a>
+          <a class="btn ghost" href="{{ url_for('register') }}" data-pjax>
+            Register
+          </a>
         {% endif %}
       </nav>
     </div>
   </header>
 
+<!--flash messages(success/ error/info)
+    positioned below header, auto hidden via js
+    replaced after pjax navigation -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-overlay" aria-live="polite">
         <div class="flash-wrap">
           {% for category, msg in messages %}
-            <div class="flash {{ category }}">{{ msg }}</div>
+            <div class="flash {{ category }}">
+              {{ msg }}
+            </div>
           {% endfor %}
         </div>
       </div>
     {% endif %}
   {% endwith %}
 
+<!--main scrollable content area
+    -.main is the element that scrolls (not window)
+    -scroll position is manually reset on pjax navigation-->
   <main class="main" role="main">
+<!--pjax container:
+    this is the only part replaced during navigation
+    prevents full page reloads-->
     <div class="container main-content" id="pjax-container">
       {% block content %}{% endblock %}
     </div>
   </main>
 
+<!--fixed footer
+    always visible, never replaced-->
   <footer class="site-footer" role="contentinfo">
-    <div class="container footer-inner">© Review Forge</div>
+    <div class="container footer-inner">
+      © Review Forge
+    </div>
   </footer>
 
+<!--global confirmation modal
+    used for destructive actions (delete review)
+    hidden by default, toggled via JS-->
   <div class="modal-backdrop hidden" id="confirm-backdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="modal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="confirm-title">
+
       <h3 id="confirm-title">Delete review?</h3>
+
       <p class="muted">
-        This action can’t be undone. Your review will be permanently removed.
+        This action can’t be undone.
+        Your review will be permanently removed.
       </p>
 
       <div class="modal-actions">
-        <button class="btn ghost" id="confirm-cancel">Cancel</button>
-        <button class="btn danger" id="confirm-ok">Delete</button>
+        <button class="btn ghost" id="confirm-cancel">
+          Cancel
+        </button>
+        <button class="btn danger" id="confirm-ok">
+          Delete
+        </button>
       </div>
     </div>
   </div>

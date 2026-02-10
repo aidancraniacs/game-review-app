@@ -1,7 +1,20 @@
 {% extends "BASE.HTML" %}
 {% block content %}
+
+<!--login page
+    purpose-
+     -authenticate existing users
+     -keep interaction focused+distraction free-->
+
 <section class="form-card">
+
+  <!--page heading
+      clear+unambiguous to reduce user hesitation-->
   <h2>Sign in</h2>
+
+  <!--login form
+      uses standard post for security sensitive input
+      explicitly opts out of pjax-->
   <form
     id="loginForm"
     method="post"
@@ -9,14 +22,45 @@
     data-no-pjax
   >
 
-    <label>Username or Email
-      <input name="identifier" type="text" required />
+    <!--identifier field
+        accepts either username or email
+        uses text instead of email to allow both-->
+    <label>
+      Username or Email
+      <input
+        name="identifier"
+        type="text"
+        required
+      />
     </label>
-    <label>Password
-      <input name="password" type="password" required />
+
+    <!--password field
+        standard password input
+        cleared safely on pjax transitions via js-->
+    <label>
+      Password
+      <input
+        name="password"
+        type="password"
+        required
+      />
     </label>
-    <button class="btn" type="submit">Login</button>
-    <p class="muted">New here? <a href="{{ url_for('register') }}">Create an account</a></p>
+
+    <!--primary submit action-->
+    <button class="btn" type="submit">
+      Login
+    </button>
+
+    <!--secondary navigation
+        soft prompt for new users without stealing focus-->
+    <p class="muted">
+      New here?
+      <a href="{{ url_for('register') }}">
+        Create an account
+      </a>
+    </p>
+
   </form>
 </section>
+
 {% endblock %}

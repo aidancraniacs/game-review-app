@@ -1,8 +1,14 @@
 {% extends "BASE.HTML" %}
 {% block content %}
 
+<!--game detail page
+    focused view for a single game
+    emphasises cover+rating+community reviews-->
 <section class="game-detail">
 
+<!--back navigation
+    uses pjax so catalogue state is preserved
+    scroll reset handled globally in js-->
   <a
     href="{{ url_for('games') }}"
     class="btn ghost small back-btn"
@@ -11,7 +17,12 @@
     ← Back to catalogue
   </a>
 
+<!--header area
+    large visual anchor+high level metadata-->
   <div class="game-detail-header">
+
+<!--primary game cover
+    acts as the visual hero element-->
     <div class="game-cover">
       <img
         src="{{ url_for('static', filename=game.cover_url) if game.cover_url else url_for('static', filename='cover-placeholder.png') }}"
@@ -19,9 +30,11 @@
       >
     </div>
 
+<!--core game metadata-->
     <div class="game-meta">
       <h1>{{ game.title }}</h1>
 
+<!--aggregate rating summary-->
       <p class="rating big">
         {% if avg_rating %}
           ★ {{ avg_rating }}/5
@@ -31,50 +44,77 @@
         {% endif %}
       </p>
 
+<!--optional game description-->
       {% if game.description %}
         <p class="description">{{ game.description }}</p>
       {% endif %}
     </div>
   </div>
 
+<!--reviews section
+    social proof+community interaction-->
   <section class="reviews-section">
     <h2>Player reviews</h2>
 
     {% if reviews %}
       <div class="review-list">
         {% for review in reviews %}
-          {% set likes = review.likes | selectattr("value", "equalto", 1) | list | length %}
-          {% set dislikes = review.likes | selectattr("value", "equalto", -1) | list | length %}
 
+          <!--pre calculate reactions for display-->
+          {% set likes = review.likes
+            | selectattr("value", "equalto", 1)
+            | list | length
+          %}
+          {% set dislikes = review.likes
+            | selectattr("value", "equalto", -1)
+            | list | length
+          %}
+
+          <!--individual review card-->
           <article class="review-card review-item">
 
+            <!--review header:
+                author+star rating-->
             <header class="review-header">
               <strong>{{ review.user.username }}</strong>
               <span class="stars">★ {{ review.rating }}/5</span>
             </header>
 
+            <!--optional review title-->
             {% if review.title %}
               <h4 class="review-title">{{ review.title }}</h4>
             {% endif %}
 
+            <!--review body-->
             {% if review.content %}
               <p class="review-content">{{ review.content }}</p>
             {% endif %}
 
+            <!--timestamp-->
             <p class="muted small">
               {{ review.created_at.strftime("%b %d, %Y") }}
             </p>
 
+            <!--review reactions
+                simple like/dislike voting-->
             <div class="review-actions">
 
-              <form method="post" action="{{ url_for('react_review', review_id=review.id) }}">
+              <!--like button-->
+              <form
+                method="post"
+                action="{{ url_for('react_review', review_id=review.id) }}"
+              >
                 <input type="hidden" name="value" value="1">
                 <button class="btn ghost small" type="submit">
                   👍 {{ likes }}
                 </button>
               </form>
 
-              <form method="post" action="{{ url_for('react_review', review_id=review.id) }}">
+              <!--dislike button-->
+              <form
+                method="post"
+                action="{{ url_for('react_review', review_id=review.id) }}"
+              >
                 <input type="hidden" name="value" value="-1">
                 <button class="btn ghost small" type="submit">
                   👎 {{ dislikes }}
@@ -87,9 +127,14 @@
         {% endfor %}
       </div>
     {% else %}
-      <p class="muted">No reviews yet. Be the first to review this game.</p>
+<!--empty state-->
+      <p class="muted">
+        No reviews yet. Be the first to review this game.
+      </p>
     {% endif %}
 
+<!--progressive disclosure for long review lists
+         js handles reveal without reloading-->
     {% if reviews|length > 3 %}
       <div class="load-more-wrap">
         <button class="btn ghost small" id="load-more-reviews">

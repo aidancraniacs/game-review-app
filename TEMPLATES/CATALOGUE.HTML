@@ -1,19 +1,28 @@
 {% extends "BASE.HTML" %}
 {% block content %}
 
+<!--catalogue page
+    acts as the main discovery+review interaction hub-->
 <section class="catalogue-page">
 
+<!--popular games
+    horizontally scrollable row
+    optimised for quick browsing+visual appeal-->
   <section class="catalogue-section">
     <h2>🔥 Popular Games</h2>
 
     <div class="game-row">
       {% for game in popular_games %}
+        <!--entire card is clickable for better ux
+            pjax enabled to avoid full reload-->
         <a
           href="{{ url_for('game_detail', game_id=game.id) }}"
           class="game-link"
           data-pjax
         >
           <article class="game-card horizontal">
+
+            <!--game cover image-->
             <div class="cover">
               <img
                 src="{{ url_for('static', filename=game.cover_url) if game.cover_url else url_for('static', filename='cover-placeholder.png') }}"
@@ -22,19 +31,25 @@
               >
             </div>
 
+            <!--basic metadata-->
             <div class="game-info">
               <h3>{{ game.title }}</h3>
+
+              <!--avg rating+review count-->
               <p class="rating">
                 {{ game.avg_rating or '—' }}/5
                 <span class="muted">({{ game.review_count }})</span>
               </p>
             </div>
+
           </article>
         </a>
       {% endfor %}
     </div>
   </section>
 
+<!--notable games
+    same layout as popular for visual consistency-->
   <section class="catalogue-section">
     <h2>✨ Notable Games</h2>
 
@@ -46,6 +61,7 @@
           data-pjax
         >
           <article class="game-card horizontal">
+
             <div class="cover">
               <img
                 src="{{ url_for('static', filename=game.cover_url) if game.cover_url else url_for('static', filename='cover-placeholder.png') }}"
@@ -56,25 +72,37 @@
 
             <div class="game-info">
               <h3>{{ game.title }}</h3>
+
+              <!--rating shown without count to keep it lightweight-->
               <p class="rating">
                 {{ game.avg_rating or '—' }}/5
               </p>
             </div>
+
           </article>
         </a>
       {% endfor %}
     </div>
   </section>
 
+<!--full game catalogue
+    grid layout with inline review submission-->
   <section class="catalogue-section">
     <h2>🎮 All Games</h2>
 
     <div class="game-grid">
       {% for game in games %}
-        {% set my_review = game.reviews | selectattr("user_id", "equalto", user.id) | first %}
+
+        <!--fetch the current users review for this game(if any)
+            used to prefill form fields-->
+        {% set my_review = game.reviews
+          | selectattr("user_id", "equalto", user.id)
+          | first
+        %}
 
         <article class="game-card vertical">
 
+          <!--large cover for grid cards-->
           <div class="cover large">
             <img
               src="{{ url_for('static', filename=game.cover_url) if game.cover_url else url_for('static', filename='cover-placeholder.png') }}"
@@ -83,8 +111,10 @@
             >
           </div>
 
+          <!--game title-->
           <h3>{{ game.title }}</h3>
 
+          <!--aggregate rating info-->
           <p class="rating">
             {% if game.review_count %}
               ★ {{ game.avg_rating }}
@@ -94,6 +124,7 @@
             {% endif %}
           </p>
 
+          <!--secondary navigation to full detail page-->
           <a
             href="{{ url_for('game_detail', game_id=game.id) }}"
             class="muted small-link"
@@ -102,19 +133,24 @@
             View details →
           </a>
 
+          <!--review form
+              handles both create+update-->
           <form method="post" action="{{ url_for('games') }}" data-pjax>
             <input type="hidden" name="game_id" value="{{ game.id }}">
-              <label>
-                Review title
-                  <input
-                    type="text"
-                    name="title"
-                    maxlength="100"
-                    placeholder="Summarise your thoughts"
-                    value="{{ my_review.title if my_review else '' }}"
-                  />
-              </label>
 
+            <!--review title-->
+            <label>
+              Review title
+              <input
+                type="text"
+                name="title"
+                maxlength="100"
+                placeholder="Summarise your thoughts"
+                value="{{ my_review.title if my_review else '' }}"
+              />
+            </label>
+
+            <!--current rating display-->
             <h4 class="rating-header">
               Your rating:
               <span class="rating-value">
@@ -122,7 +158,11 @@
               </span>
             </h4>
 
+            <!--interactive star rating widget
+                controlled entirely via js-->
             <div class="star-rating" aria-label="Star rating">
+
+              <!--actual value submitted-->
               <input
                 type="hidden"
                 name="rating"
@@ -130,6 +170,7 @@
                 required
               />
 
+              <!--visual star buttons-->
               <button type="button">★</button>
               <button type="button">★</button>
               <button type="button">★</button>
@@ -139,18 +180,26 @@
               <span class="rating-text">Select a rating</span>
             </div>
 
+            <!--review content-->
             <label>
               Review
-              <textarea name="content" rows="2">{{ my_review.content if my_review else '' }}</textarea>
+              <textarea
+                name="content"
+                rows="2"
+              >{{ my_review.content if my_review else '' }}</textarea>
             </label>
 
+            <!--submit/update-->
             <button class="btn small" type="submit">
               {{ 'Update review' if my_review else 'Submit review' }}
             </button>
           </form>
 
+<!--delete review(only shown if review exists)
+    uses global confirmation modal-->
           {% if my_review %}
-            <form method="post"
+            <form
+              method="post"
               action="{{ url_for('delete_review', review_id=my_review.id) }}"
               data-confirm
               style="margin-top:8px"

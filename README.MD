@@ -1,9 +1,7 @@
---For mobile and desktop to work, APP.PY must be running in terminal & go to https://countryfied-imani-nonpsychical.ngrok-free.dev on the device of choice
+||| (SETUP) |||
 
--- Alot of the code and information comes from different yt videos based off the issues or features I wanted to implement/fix
+-- To setup the web app, file: 'APP.PY' must be running in VS Code terminal, then 'Ctrl + Click' on 'http://10.0.0.249:5000' 'OR' go to 'https://countryfied-imani-nonpsychical.ngrok-free.dev' on the device of choice (mobile, tablet, desktop).
 
--- I wanted to make the web app as high quality as I could, but I don't know much further than the standard components from the pwa tutorials
+|-----------------------------------------------------------|
 
--- This should work on mobile and desktop, I tried on both and it was a success
-
--- I also use an extension that gives suggestions for clean and understandable comments for documentation (GitHub Copilot)
+-- I'm unsure if we're supposed to add example reviews (I added a few), but I also included additional features such as likes/dislikes + 'Load More' reviews button for better organisation.
