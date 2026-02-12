@@ -1,3 +1,3 @@
 (SETUP)
 
--- To setup the web app, file: 'APP.PY' must be running in terminal (Command: python APP.PY), then go to 'http://10.0.0.249:5000' 'OR' go to 'https://countryfied-imani-nonpsychical.ngrok-free.dev' on the device of choice (mobile, tablet, desktop).
+-- To setup the web app, file: 'APP.PY' must be running in a terminal (Command: python APP.PY), then go to 'http://127.0.0.1:5000/'. For all devices, have 'python APP.PY' running, and in separate terminal, have '.\ngrok http 5000' running. Then the link: 'https://countryfied-imani-nonpsychical.ngrok-free.dev' (on mobile, tablet, desktop) should direct you to the web app.
